@@ -1,27 +1,27 @@
-# Makefile for the Secure C File Manager
+# !!! IMPORTANT !!!
+# Change this path to where you installed OpenSSL.
+OPENSSL_DIR = C:/Program Files/OpenSSL-Win64
 
-# Compiler and flags
+# Compiler
 CC = gcc
-# -Wall: Show all warnings.
-# -g: Include debugging information.
-# -O2: Optimization level 2 for release builds.
-# -I.: Include the current directory for header files (e.g., crypto.h).
-CFLAGS = -Wall -g -O2 -I.
+
+# Compiler flags
+CFLAGS = -Wall -g -O2 -I"$(OPENSSL_DIR)/include"
 
 # Linker flags
-# -lssl -lcrypto: Link against the OpenSSL libraries.
-LDFLAGS = -lssl -lcrypto
+LDFLAGS = -L"$(OPENSSL_DIR)/lib" -lssl -lcrypto
 
 # Directories
 SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 
-# Automatically find all .c files in the source directory
+# Source files
 SRCS = $(wildcard $(SRC_DIR)/*.c)
-
-# Generate object file names from source file names
+# Object files
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+# Executable name
+TARGET = $(BIN_DIR)/secure_file_manager.exe
 
 # The final executable file name
 TARGET = $(BIN_DIR)/secure_file_manager
