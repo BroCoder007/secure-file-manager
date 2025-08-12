@@ -75,7 +75,6 @@ void list_vault_files() {
 void add_file_to_vault(const char* file_path, const char* password) {
     ensure_vault_directory();
     
-    // basename() can modify its argument, so we create a copy.
     char* file_path_copy = strdup(file_path);
     if (!file_path_copy) {
         perror("Failed to duplicate file path");
@@ -86,7 +85,6 @@ void add_file_to_vault(const char* file_path, const char* password) {
     char vault_path[256];
     snprintf(vault_path, sizeof(vault_path), "%s/%s.enc", VAULT_DIR, name);
 
-    // Check if a file with the same name already exists to prevent overwrites.
     if (access(vault_path, F_OK) == 0) {
         fprintf(stderr, "Error: A file named '%s' already exists in the vault.\n", name);
         free(file_path_copy);
@@ -107,8 +105,10 @@ void add_file_to_vault(const char* file_path, const char* password) {
 void retrieve_file_from_vault(const char* filename, const char* output_path, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
-    // **BUG FIX:** Do not add another .enc extension. The user provides the full filename.
     snprintf(vault_path, sizeof(vault_path), "%s/%s", VAULT_DIR, filename);
+
+    // *** DEBUGGING LINE ADDED HERE ***
+    printf("DEBUG: Checking for file at path: [%s]\n", vault_path);
 
     if (access(vault_path, F_OK) != 0) {
         fprintf(stderr, "Error: File '%s' not found in the vault.\n", filename);
@@ -128,21 +128,22 @@ void retrieve_file_from_vault(const char* filename, const char* output_path, con
 void delete_file_from_vault(const char* filename, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
-    // **BUG FIX:** Do not add another .enc extension. The user provides the full filename.
     snprintf(vault_path, sizeof(vault_path), "%s/%s", VAULT_DIR, filename);
+
+    // *** DEBUGGING LINE ADDED HERE ***
+    printf("DEBUG: Checking for file at path: [%s]\n", vault_path);
 
     if (access(vault_path, F_OK) != 0) {
         fprintf(stderr, "Error: File '%s' not found in the vault.\n", filename);
         return;
     }
     
-    // For safety, we verify the password before deleting.
     char temp_output[] = "temp_delete_check.tmp";
     if (!decrypt_file(vault_path, temp_output, password)) {
         fprintf(stderr, "Error: Incorrect password. Deletion aborted for safety.\n");
         return;
     }
-    remove(temp_output); // Clean up the temporary file immediately.
+    remove(temp_output);
 
     if (remove(vault_path) == 0) {
         printf("File '%s' successfully deleted from the vault.\n", filename);
