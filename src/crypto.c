@@ -63,8 +63,6 @@ int encrypt_file(const char *input_file, const char *output_file, const char *pa
     fwrite(salt, 1, sizeof(salt), out_f);
 
     // 2. Derive a key and IV from the password and salt using PBKDF2.
-    // This is a key stretching algorithm that makes brute-force attacks harder.
-    // We derive one block of data and split it into the key and IV.
     unsigned char derived_key_iv[KEY_SIZE + IV_SIZE];
     if (!PKCS5_PBKDF2_HMAC(password, strlen(password), salt, sizeof(salt), 10000, EVP_sha256(), sizeof(derived_key_iv), derived_key_iv)) {
         fprintf(stderr, "Error: Could not derive key and IV.\n");
@@ -86,14 +84,12 @@ int encrypt_file(const char *input_file, const char *output_file, const char *pa
     if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
         handle_openssl_errors();
 
-    // Read the input file in chunks, encrypting each one.
     while ((len = fread(inbuf, 1, sizeof(inbuf), in_f)) > 0) {
         if (1 != EVP_EncryptUpdate(ctx, outbuf, &ciphertext_len, inbuf, len))
             handle_openssl_errors();
         fwrite(outbuf, 1, ciphertext_len, out_f);
     }
 
-    // Finalize the encryption (handles padding).
     if (1 != EVP_EncryptFinal_ex(ctx, outbuf, &ciphertext_len))
         handle_openssl_errors();
     fwrite(outbuf, 1, ciphertext_len, out_f);
@@ -128,16 +124,14 @@ int decrypt_file(const char *input_file, const char *output_file, const char *pa
         return 0;
     }
 
-    // 1. Read the salt from the beginning of the encrypted file.
     if (fread(salt, 1, sizeof(salt), in_f) != sizeof(salt)) {
         fprintf(stderr, "Error: Could not read salt from file. File may be corrupted or not an encrypted file.\n");
         fclose(in_f);
         fclose(out_f);
-        remove(output_file); // Clean up the empty output file
+        remove(output_file);
         return 0;
     }
 
-    // 2. Derive the key and IV exactly as was done during encryption.
     unsigned char derived_key_iv[KEY_SIZE + IV_SIZE];
     if (!PKCS5_PBKDF2_HMAC(password, strlen(password), salt, sizeof(salt), 10000, EVP_sha256(), sizeof(derived_key_iv), derived_key_iv)) {
         fprintf(stderr, "Error: Could not derive key and IV for decryption.\n");
@@ -148,7 +142,6 @@ int decrypt_file(const char *input_file, const char *output_file, const char *pa
     memcpy(key, derived_key_iv, KEY_SIZE);
     memcpy(iv, derived_key_iv + KEY_SIZE, IV_SIZE);
 
-    // 3. Perform decryption.
     EVP_CIPHER_CTX *ctx;
     int len;
     int plaintext_len;
@@ -162,7 +155,6 @@ int decrypt_file(const char *input_file, const char *output_file, const char *pa
 
     while ((len = fread(inbuf, 1, sizeof(inbuf), in_f)) > 0) {
         if (1 != EVP_DecryptUpdate(ctx, outbuf, &plaintext_len, inbuf, len)) {
-            // This is a common point of failure if the password is wrong.
             EVP_CIPHER_CTX_free(ctx);
             fclose(in_f);
             fclose(out_f);
@@ -172,20 +164,25 @@ int decrypt_file(const char *input_file, const char *output_file, const char *pa
         fwrite(outbuf, 1, plaintext_len, out_f);
     }
 
-    // Finalize decryption. This will fail if padding is incorrect (wrong password).
     ret = EVP_DecryptFinal_ex(ctx, outbuf, &plaintext_len);
     
-    EVP_CIPHER_CTX_free(ctx);
-    fclose(in_f);
-    fclose(out_f);
-
+    // **FIXED LOGIC HERE**
     if (ret > 0) {
+        // Write the final decrypted block if successful
         fwrite(outbuf, 1, plaintext_len, out_f);
     } else {
         // Decryption failed. Clean up the potentially garbage output file.
+        fclose(in_f);
+        fclose(out_f);
         remove(output_file);
+        EVP_CIPHER_CTX_free(ctx);
         return 0;
     }
+
+    // Clean up all resources at the end
+    EVP_CIPHER_CTX_free(ctx);
+    fclose(in_f);
+    fclose(out_f);
 
     return 1;
 }
