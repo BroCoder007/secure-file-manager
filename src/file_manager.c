@@ -107,7 +107,8 @@ void add_file_to_vault(const char* file_path, const char* password) {
 void retrieve_file_from_vault(const char* filename, const char* output_path, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
-    snprintf(vault_path, sizeof(vault_path), "%s/%s.enc", VAULT_DIR, filename);
+    // **BUG FIX:** Do not add another .enc extension. The user provides the full filename.
+    snprintf(vault_path, sizeof(vault_path), "%s/%s", VAULT_DIR, filename);
 
     if (access(vault_path, F_OK) != 0) {
         fprintf(stderr, "Error: File '%s' not found in the vault.\n", filename);
@@ -127,15 +128,15 @@ void retrieve_file_from_vault(const char* filename, const char* output_path, con
 void delete_file_from_vault(const char* filename, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
-    snprintf(vault_path, sizeof(vault_path), "%s/%s.enc", VAULT_DIR, filename);
+    // **BUG FIX:** Do not add another .enc extension. The user provides the full filename.
+    snprintf(vault_path, sizeof(vault_path), "%s/%s", VAULT_DIR, filename);
 
     if (access(vault_path, F_OK) != 0) {
         fprintf(stderr, "Error: File '%s' not found in the vault.\n", filename);
         return;
     }
     
-    // For safety, we verify the password before deleting. This is done by
-    // attempting to decrypt the file to a temporary location.
+    // For safety, we verify the password before deleting.
     char temp_output[] = "temp_delete_check.tmp";
     if (!decrypt_file(vault_path, temp_output, password)) {
         fprintf(stderr, "Error: Incorrect password. Deletion aborted for safety.\n");
