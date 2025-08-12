@@ -1,15 +1,12 @@
 # !!! IMPORTANT !!!
-# Change this path to where you installed OpenSSL.
-OPENSSL_DIR = C:/Program Files/OpenSSL-Win64
-
 # Compiler
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -g -O2 -I"$(OPENSSL_DIR)/include"
+CFLAGS = -Wall -g -O2
 
 # Linker flags
-LDFLAGS = -L"$(OPENSSL_DIR)/lib" -lssl -lcrypto
+LDFLAGS = -lssl -lcrypto
 
 # Directories
 SRC_DIR = src
