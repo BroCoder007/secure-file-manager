@@ -21,12 +21,14 @@ void print_usage() {
     printf("Secure File Manager\n");
     printf("Usage: ./secure_file_manager <command> [options]\n\n");
     printf("Commands:\n");
-    printf("  encrypt <input_file> <output_file> <password>   Encrypts a file.\n");
-    printf("  decrypt <input_file> <output_file> <password>   Decrypts a file.\n");
-    printf("  list                                            Lists files in the secure vault.\n");
-    printf("  add <file_path> <password>                      Adds and encrypts a file to the vault.\n");
-    printf("  retrieve <filename> <output_path> <password>    Retrieves and decrypts a file from the vault.\n");
-    printf("  delete <filename> <password>                    Deletes a file from the vault.\n");
+    printf("  encrypt <input> <output> <password>     Encrypts a file.\n");
+    printf("  decrypt <input> <output> <password>     Decrypts a file.\n");
+    printf("  add <file> <password>                   Adds and encrypts a file to the vault.\n");
+    printf("  retrieve <file> <output> <password>     Retrieves and decrypts a file from the vault.\n");
+    printf("  delete <file> <password>                Deletes a file from the vault.\n");
+    printf("  list                                    Lists files in the secure vault.\n");
+    // ADDED hash command
+    printf("  hash <algo> <file>                      Hashes a file. Algo can be 'sha256' or 'sha512'.\n");
     printf("\n");
 }
 
@@ -92,7 +94,18 @@ int main(int argc, char *argv[]) {
             return 1;
         }
         delete_file_from_vault(argv[2], argv[3]);
-    } else {
+    } 
+    // ADDED handler for the hash command
+    else if (strcmp(command, "hash") == 0) {
+        if (argc != 4) {
+            fprintf(stderr, "Error: Incorrect arguments for 'hash'.\n");
+            print_usage();
+            return 1;
+        }
+        // argv[2] is the algorithm, argv[3] is the file path
+        handle_file_hashing(argv[2], argv[3]);
+    } 
+    else {
         fprintf(stderr, "Error: Unknown command '%s'.\n", command);
         print_usage();
         return 1;
