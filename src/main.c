@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "file_manager.h"
+#include "file_manager.h" // <<< THE MISSING LINE WAS HERE
 
 /**
  * @brief Prints the usage instructions for the command-line tool.
@@ -27,7 +27,6 @@ void print_usage() {
     printf("  retrieve <file> <output> <password>     Retrieves and decrypts a file from the vault.\n");
     printf("  delete <file> <password>                Deletes a file from the vault.\n");
     printf("  list                                    Lists files in the secure vault.\n");
-    // ADDED hash command
     printf("  hash <algo> <file>                      Hashes a file. Algo can be 'sha256' or 'sha512'.\n");
     printf("\n");
 }
