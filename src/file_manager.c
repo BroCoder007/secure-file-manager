@@ -20,22 +20,23 @@
 #include <libgen.h> // For basename()
 #include <openssl/evp.h> // Needed for EVP_MAX_MD_SIZE
 
-// The directory where encrypted files are stored.
 #define VAULT_DIR ".vault"
 
-// ... (all previous functions like ensure_vault_directory, add_file_to_vault, etc. are unchanged) ...
 void ensure_vault_directory() {
     struct stat st = {0};
     if (stat(VAULT_DIR, &st) == -1) {
         mkdir(VAULT_DIR, 0700);
     }
 }
+
 int handle_file_encryption(const char* input_path, const char* output_path, const char* password) {
     return encrypt_file(input_path, output_path, password);
 }
+
 int handle_file_decryption(const char* input_path, const char* output_path, const char* password) {
     return decrypt_file(input_path, output_path, password);
 }
+
 void list_vault_files() {
     ensure_vault_directory();
     DIR *d;
@@ -53,6 +54,7 @@ void list_vault_files() {
         perror("Could not open vault directory");
     }
 }
+
 void add_file_to_vault(const char* file_path, const char* password) {
     ensure_vault_directory();
     char* file_path_copy = strdup(file_path);
@@ -75,6 +77,7 @@ void add_file_to_vault(const char* file_path, const char* password) {
     }
     free(file_path_copy);
 }
+
 void retrieve_file_from_vault(const char* filename, const char* output_path, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
@@ -89,6 +92,7 @@ void retrieve_file_from_vault(const char* filename, const char* output_path, con
         fprintf(stderr, "Error: Failed to retrieve '%s'. Check your password.\n", filename);
     }
 }
+
 void delete_file_from_vault(const char* filename, const char* password) {
     ensure_vault_directory();
     char vault_path[256];
@@ -110,28 +114,17 @@ void delete_file_from_vault(const char* filename, const char* password) {
     }
 }
 
-
-// NEW FUNCTION
-/**
- * @brief Handles hashing a file and printing the result.
- */
 void handle_file_hashing(const char* algorithm, const char* file_path) {
-    // EVP_MAX_MD_SIZE is a constant from OpenSSL that guarantees our buffer is large enough
-    // for any hash function it supports (e.g., SHA-512 needs 64 bytes).
     unsigned char hash_result[EVP_MAX_MD_SIZE];
     unsigned int hash_len;
 
-    // Call the crypto function to perform the actual hashing
     if (!hash_file(algorithm, file_path, hash_result, &hash_len)) {
         fprintf(stderr, "Error: Hashing process failed for file '%s'.\n", file_path);
         return;
     }
 
-    // Print the results to the user
     printf("Successfully hashed '%s' using %s:\n", file_path, algorithm);
     
-    // The hash result is raw binary data. We loop through it and print
-    // each byte as a two-digit hexadecimal number.
     for (unsigned int i = 0; i < hash_len; i++) {
         printf("%02x", hash_result[i]);
     }
