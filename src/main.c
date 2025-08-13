@@ -9,10 +9,11 @@
  * =====================================================================================
  */
 
+#include "file_manager.h" // <<< THE MISSING LINE WAS HERE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "file_manager.h" // <<< THE MISSING LINE WAS HERE
+
 
 /**
  * @brief Prints the usage instructions for the command-line tool.
