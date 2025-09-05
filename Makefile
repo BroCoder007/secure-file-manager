@@ -1,49 +1,53 @@
-# !!! IMPORTANT !!!
-# Compiler
 CC = gcc
-
-# Compiler flags
 CFLAGS = -Wall -g -O2
-
-# Linker flags
 LDFLAGS = -lssl -lcrypto
+GTKFLAGS = `pkg-config --cflags --libs gtk+-3.0`
 
-# Directories
 SRC_DIR = src
 BUILD_DIR = build
 BIN_DIR = bin
 
-# Source files
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-# Object files
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
-# Executable name
-TARGET = $(BIN_DIR)/secure_file_manager.exe
+CLI_OBJS = $(BUILD_DIR)/crypto.o $(BUILD_DIR)/file_manager.o $(BUILD_DIR)/main.o
+GUI_OBJS = $(BUILD_DIR)/crypto.o $(BUILD_DIR)/file_manager.o $(BUILD_DIR)/gui_gtk.o
 
-# The final executable file name
-TARGET = $(BIN_DIR)/secure_file_manager
+CLI_BIN = $(BIN_DIR)/secure_file_manager
+GUI_BIN = $(BIN_DIR)/secure_gui
 
-# The default goal of the Makefile. 'all' depends on the target executable.
-all: $(TARGET)
+.PHONY: all clean cli gui
 
-# Rule to link the object files into the final executable
-$(TARGET): $(OBJS)
-	@echo "Linking..."
-	@mkdir -p $(BIN_DIR)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
-	@echo "Build finished: $(TARGET)"
+all: $(CLI_BIN) $(GUI_BIN)
 
-# Rule to compile a .c source file into a .o object file
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@echo "Compiling $<..."
-	@mkdir -p $(BUILD_DIR)
+cli: $(CLI_BIN)
+
+gui: $(GUI_BIN)
+
+# --- CLI ---
+$(CLI_BIN): $(CLI_OBJS) | $(BIN_DIR)
+	$(CC) $(CLI_OBJS) -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Rule to clean up the project directory
-clean:
-	@echo "Cleaning up build artifacts..."
-	@rm -rf $(BUILD_DIR) $(BIN_DIR)
-	@echo "Cleanup complete."
+# --- GUI ---
+$(GUI_BIN): $(GUI_OBJS) | $(BIN_DIR)
+	$(CC) $(GUI_OBJS) -o $@ $(LDFLAGS) $(GTKFLAGS)
 
-# Declare targets that are not actual files
-.PHONY: all clean
+$(BUILD_DIR)/gui_gtk.o: gui_gtk.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@ $(GTKFLAGS)
+
+# --- Shared sources ---
+$(BUILD_DIR)/crypto.o: $(SRC_DIR)/crypto.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/file_manager.o: $(SRC_DIR)/file_manager.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# --- Dirs ---
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+clean:
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
