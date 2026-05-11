@@ -1,132 +1,163 @@
-Secure Command-Line File Manager
-A robust, command-line tool written in C for securing files through strong encryption. It provides a personal vault for managing sensitive files and includes hashing utilities for verifying file integrity. The application uses the industry-standard OpenSSL library for all cryptographic operations.
+# Secure File Manager (CLI + GUI)
 
-Features
-Strong Encryption: Utilizes AES-256-CBC for file encryption, ensuring confidentiality.
+A robust file manager written in **C** that provides strong encryption, a personal vault for managing sensitive files, and hashing utilities for verifying file integrity.  
 
-Secure Key Derivation: Uses PBKDF2 with SHA-256 and a random salt to derive encryption keys from user passwords, protecting against rainbow table attacks.
+Originally designed as a **command-line application**, it now includes a simple **GTK GUI** for beginners who prefer a graphical interface.  
 
-Personal Vault: A simple, local vault system (.vault directory) to add, list, retrieve, and delete encrypted files easily.
+Cryptography is powered by the industry-standard **OpenSSL** library.
 
-File Integrity: Includes a hashing utility to generate SHA-256 or SHA-512 hashes of any file, allowing users to verify that files have not been tampered with.
+---
 
-Cross-Platform: Written in standard C with OpenSSL, designed to compile and run on Linux, macOS, and Windows (via WSL).
+## ✨ Features
 
-Project Structure
+- **Strong Encryption**: Uses AES-256-CBC for file encryption, ensuring confidentiality.  
+- **Secure Key Derivation**: PBKDF2 with SHA-256 + random salt to derive keys from passwords.  
+- **Personal Vault**: Local `.vault` directory to store, list, retrieve, and delete encrypted files.  
+- **File Integrity**: Hashing utility supporting SHA-256 and SHA-512.  
+- **Cross-Platform**: Works on Linux, macOS, and Windows (via WSL).  
+- **Now with GUI**: Simple GTK3 interface to perform vault and utility operations without using the terminal.  
+
+---
+
+## 📂 Project Structure
+
+```
 secure-file-manager/
-├── .vault/         # Auto-generated: Stores encrypted files
-├── bin/            # Auto-generated: Contains the final executable
-├── build/          # Auto-generated: Stores intermediate object files (.o)
-├── src/            # Contains all source code (.c) and header files (.h)
-│   ├── main.c
-│   ├── file_manager.c
-│   ├── file_manager.h
-│   ├── crypto.c
-│   └── crypto.h
-└── Makefile        # The build script for compiling the project
+├── .vault/          # Auto-generated: Stores encrypted files
+├── bin/             # Auto-generated: CLI and GUI executables
+│   ├── secure_file_manager   # CLI tool
+│   └── secure_gui            # GTK GUI
+├── build/           # Auto-generated: Object files (.o)
+├── src/             # Source code
+│   ├── main.c              # CLI entry point
+│   ├── file_manager.c/.h   # Vault operations
+│   ├── crypto.c/.h         # Encryption/Decryption + hashing
+│   └── gui_gtk.c           # GUI entry point (new)
+└── Makefile         # Build script
+```
 
-Setup and Prerequisites
-To collaborate on this project, you need a C compiler (gcc), the make build tool, and the OpenSSL development library installed on your system. Below are detailed instructions for different operating systems.
+---
 
-On Linux (Debian, Ubuntu, Kali Linux)
-This is the most straightforward environment. Open your terminal and run the following command to install all necessary packages:
+## ⚙️ Setup and Prerequisites
 
-sudo apt update && sudo apt install build-essential libssl-dev git
+### On Linux (Debian/Ubuntu/Kali)
+```bash
+sudo apt update
+sudo apt install build-essential libssl-dev libgtk-3-dev git
+```
 
-build-essential: Installs gcc, make, and other critical build tools.
+### On Windows (via WSL)
+1. Install WSL (Ubuntu recommended).  
+2. Open your WSL terminal.  
+3. Install prerequisites:
+   ```bash
+   sudo apt update
+   sudo apt install build-essential libssl-dev libgtk-3-dev git
+   ```
+4. Navigate to your repo folder (Windows drives are under `/mnt/`).
 
-libssl-dev: Provides the header files and libraries for OpenSSL.
+### On macOS
+Using Homebrew:
+```bash
+brew install gcc make openssl gtk+3 git
+```
 
-On Windows (Recommended: Use WSL)
-The best and most reliable way to work on this project on Windows is by using the Windows Subsystem for Linux (WSL). This avoids common issues with setting up a C development environment and managing system paths on Windows.
+---
 
-Install WSL: Follow the official Microsoft guide to install WSL and a Linux distribution like Ubuntu.
-
-Open your WSL terminal (e.g., Ubuntu).
-
-Install Prerequisites: Inside the WSL terminal, run the same command as for Linux:
-
-sudo apt update && sudo apt install build-essential libssl-dev git
-
-Access Your Files: Your Windows drives are automatically available inside WSL under the /mnt/ directory. For example, your E:\ drive can be accessed at /mnt/e/. Navigate to your project folder using a command like:
-
-cd /mnt/e/secure-file-manager
-
-On macOS
-Using Homebrew is the recommended package manager for macOS.
-
-Install Homebrew if you don't have it.
-
-Install the required packages in your terminal:
-
-brew install gcc make openssl git
-
-Note: macOS comes with a C compiler (Clang), but installing gcc can sometimes be helpful for compatibility. The system's make is sufficient.
-
-How to Compile
-Once the prerequisites are installed, you can compile the project with a single command.
+## 🛠️ Building the Project
 
 Clone the repository:
-
+```bash
 git clone <your-repository-url>
-
-Navigate into the project directory:
-
 cd secure-file-manager
+```
 
-Compile the code using the Makefile:
-
+Build everything (CLI + GUI):
+```bash
 make
+```
 
-This command reads the Makefile and automatically compiles all source files, creating the executable at bin/secure_file_manager.
+- CLI executable → `bin/secure_file_manager`  
+- GUI executable → `bin/secure_gui`  
 
-Troubleshooting Common Issues
-make: command not found (on WSL/Linux):
-This means the build tools are not installed. Run sudo apt install build-essential.
+Build only the CLI:
+```bash
+make cli
+```
 
-Errors like openssl/evp.h: No such file or directory:
-This means the OpenSSL development library is missing. Run sudo apt install libssl-dev.
+Build only the GUI:
+```bash
+make gui
+```
 
-Permission Denied errors when copying files from Windows to WSL:
-This can happen due to filesystem permission conflicts between Windows and Linux. The best solution is to work with the files inside the WSL filesystem. Copy the project from your Windows drive to your WSL home directory (~/):
+Clean build files:
+```bash
+make clean
+```
 
-# Example copy command
-cp -r /mnt/e/secure-file-manager ~/
-cd ~/secure-file-manager
+---
 
-Terminal becomes unresponsive in WSL:
-If commands like pwd or ls produce no output, your WSL instance may be frozen. Open PowerShell on Windows and run wsl --shutdown to force a restart, then open your WSL terminal again.
+## ▶️ Running the Application
 
-How to Run the Program
-All commands are run from the project's root directory.
+### **1. Command-Line Interface (CLI)**
 
-Create a test file first:
+Create a test file:
+```bash
 echo "This is my top secret data." > secret_note.txt
+```
 
-Vault Commands
-Add a file: ./bin/secure_file_manager add secret_note.txt MyStrongPassword123
+Vault Commands:
+```bash
+./bin/secure_file_manager add secret_note.txt MyStrongPassword123
+./bin/secure_file_manager list
+./bin/secure_file_manager retrieve secret_note.txt.enc decrypted_note.txt MyStrongPassword123
+./bin/secure_file_manager delete secret_note.txt.enc MyStrongPassword123
+```
 
-List files: ./bin/secure_file_manager list
+Utility Commands:
+```bash
+./bin/secure_file_manager hash sha256 secret_note.txt
+./bin/secure_file_manager hash sha512 secret_note.txt
+./bin/secure_file_manager encrypt secret_note.txt manual_encrypted.dat MyStrongPassword123
+./bin/secure_file_manager decrypt manual_encrypted.dat manual_decrypted.txt MyStrongPassword123
+```
 
-Retrieve a file: ./bin/secure_file_manager retrieve secret_note.txt.enc decrypted_note.txt MyStrongPassword123
+---
 
-Delete a file: ./bin/secure_file_manager delete secret_note.txt.enc MyStrongPassword123
+### **2. Graphical User Interface (GUI)**
 
-Utility Commands
-Hash with SHA-256: ./bin/secure_file_manager hash sha256 secret_note.txt
+Run:
+```bash
+./bin/secure_gui
+```
 
-Hash with SHA-512: ./bin/secure_file_manager hash sha512 secret_note.txt
+The GUI window provides tabs/buttons for:
+- **Vault Operations**
+  - Add File → encrypt and store in `.vault/`
+  - List Files → view encrypted files
+  - Retrieve File → decrypt a vault file
+  - Delete File → remove from vault
+- **Utility Operations**
+  - Hash File → choose algorithm (SHA-256/SHA-512)
+  - Encrypt/Decrypt → manual operations outside vault
 
-Directly encrypt: ./bin/secure_file_manager encrypt secret_note.txt manual_encrypted.dat MyStrongPassword123
+👉 The GUI is intentionally **simple and beginner-friendly**, using text boxes and basic dialogs.
 
-Directly decrypt: ./bin/secure_file_manager decrypt manual_encrypted.dat manual_decrypted.txt MyStrongPassword123
+---
 
-Conclusion
-This tool provides a secure, reliable, and transparent way to manage sensitive files directly from the command line. By leveraging the robust cryptographic primitives offered by OpenSSL, it ensures that data remains confidential and its integrity can be verified. The modular C code is designed to be readable, maintainable, and easily extensible for future features.
+## 🧰 Troubleshooting
 
-References
-OpenSSL Cryptography and SSL/TLS Toolkit: https://www.openssl.org/
+- `make: command not found` → Install build tools (`sudo apt install build-essential`).  
+- `openssl/evp.h: No such file` → Install OpenSSL dev (`sudo apt install libssl-dev`).  
+- `gtk/gtk.h: No such file` → Install GTK3 dev (`sudo apt install libgtk-3-dev`).  
+- GUI doesn’t open → Run inside a desktop environment (not headless server).  
 
-AES (Advanced Encryption Standard) - Wikipedia: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
+---
 
-PBKDF2 (Password-Based Key Derivation Function 2) - Wikipedia: https://en.wikipedia.org/wiki/PBKDF2
+## ✅ Conclusion
+
+The **Secure File Manager** now provides both:
+- A **powerful CLI tool** for scripting and advanced users.  
+- A **beginner-friendly GUI** using GTK for interactive workflows.  
+
+By leveraging OpenSSL, it ensures confidentiality and integrity of your sensitive files in both terminal and graphical modes.
