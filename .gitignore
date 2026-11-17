@@ -53,3 +53,12 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Generated project artifacts and local secrets
+/build/
+/bin/
+/build-sanitize/
+/bin-sanitize/
+/.vault/
+__pycache__/
+*.pyc
